@@ -3,6 +3,14 @@ let jazz, isJazzReady = false
 let foreground
 let direction = 'left'
 let tick = 0
+let transitionDone = false;
+const tickMax = 13
+const tickMaxSquare = tickMax * tickMax 
+var offset = new Date().getTimezoneOffset();
+var gmt = -offset/60;
+var clockPosX, clockPosY
+var gmtString = (gmt >= 0) ? 'GMT+'+gmt : 'GMT'+gmt;
+
 
 function setup() {
   getAudioContext().suspend();
@@ -26,6 +34,8 @@ function setup() {
 
   colorMode(HSB, 360, 100, 100)
   foreground.colorMode(HSB, 360, 100, 100)
+  clockPosX = windowWidth / 2
+  clockPosY = (windowHeight / 2) - 50
 
 }
 
@@ -43,12 +53,13 @@ function draw() {
     clieckEvent = 0
   }
 
-  if(tick < 30){
+  if(tick < tickMax){
     tick++
   }
 
-  if(s != sOld){
+  if(s != sOld){ /* once a second */
     tick = 0
+    transitionDone = false
     osc.start();
     osc.stop(0.02);
 
@@ -58,57 +69,96 @@ function draw() {
       oscLong.amp(0, 1.8)
     }
 
-
     if(s % 2 == 0){
-      randomColor = nextRandomColor;
       nextRandomColor = [360 * Math.random() , 55 + 10 * Math.random(), 75 + 10 * Math.random()];
+    }
 
-      switch(direction){
-        case 'left':
-          direction = 'up'
-          break;
-    
-        case 'up' :
-          direction = 'right'
-          break;
-    
-        case 'right' :
-          direction = 'down'
-          break;
-    
-        case 'down' : 
-          direction = 'left'
-          break;
-      }    
+    switch(direction){
+      case 'left':
+        direction = 'up'
+        break;
+  
+      case 'up' :
+        direction = 'right'
+        break;
+  
+      case 'right' :
+        direction = 'down'
+        break;
+  
+      case 'down' : 
+        direction = 'left'
+        break;
+     }
+  }
+
+
+  if(transitionDone == false){
+    if(s % 2 == 0){
+      background('white')
+      fill(randomColor[0] , randomColor[1], randomColor[2])
+    } else{
+      background(randomColor[0] , randomColor[1], randomColor[2])
+      fill('white')
+    }
+
+  } else {
+    if(s % 2 == 0){ 
+      background(randomColor[0] , randomColor[1], randomColor[2])
+      fill('white')
+  
+    } else {
+      background('white')
+      fill(randomColor[0] , randomColor[1], randomColor[2])
+  
     }
 
   }
 
-  if(s % 2 ==0){
-
-    background('white')
-    fill(randomColor[0] , randomColor[1], randomColor[2])
-
-    foreground.background(nextRandomColor[0] , nextRandomColor[1], nextRandomColor[2])
-
-  } else {
-    background(randomColor[0] , randomColor[1], randomColor[2])
-    fill('white')
-
-    foreground.background('white')
-  }
-
   textFont('Helvetica', 100, 100)
-  clockPosY = windowHeight / 2
-  clockPosX = windowWidth / 2
-
   text(hour().toString().padStart(2,'0'), clockPosX - 130, clockPosY)
   text(minute().toString().padStart(2,'0'), clockPosX, clockPosY)
   text(s.toString().padStart(2,'0'), clockPosX + 130, clockPosY)
 
 
-  foreground.textFont('Helvetica', 100, 100)
-  foreground.textStyle(BOLD)
+  textFont('Helvetica', 30, 30)
+  text(gmtString, clockPosX+10, clockPosY + 40);
+
+  textFont('Helvetica', 20, 20)
+  if(jazz.isPlaying() == true){
+    text('playing', clockPosX + 25, clockPosY + 80)
+  } else if(isJazzReady == true){
+    text('click to play', clockPosX, clockPosY + 80)
+  } else {
+    text('loading, please wait', clockPosX - 30, clockPosY + 80)
+  }
+
+  if (tick >= tickMax) {
+    randomColor = nextRandomColor;
+    transitionDone = true;
+  }
+
+  if(s % 2 == 0){
+    foreground.background(nextRandomColor[0] , nextRandomColor[1], nextRandomColor[2])
+
+  } else {
+    foreground.background('white')
+
+  }
+
+
+  foreground.textFont('Helvetica', 30, 30)
+  foreground.text(gmtString, clockPosX+10, clockPosY + 40);
+
+  foreground.textFont('Helvetica', 20, 20)
+  if(jazz.isPlaying() == true){
+    foreground.text('playing', clockPosX + 25, clockPosY + 80)
+  } else if(isJazzReady == true){
+    foreground.text('click to play', clockPosX, clockPosY + 80)
+  } else {
+    foreground.text('loading, please wait', clockPosX - 30, clockPosY + 80)
+  }
+
 
   if(s % 2 == 0){
     foreground.fill('white')
@@ -116,55 +166,41 @@ function draw() {
     foreground.fill(nextRandomColor[0] , nextRandomColor[1], nextRandomColor[2])
   }
 
+  foreground.textFont('Helvetica', 100, 100)
   foreground.text(hour().toString().padStart(2,'0'), clockPosX - 130, clockPosY)
   foreground.text(minute().toString().padStart(2,'0'), clockPosX, clockPosY)
   foreground.text(s.toString().padStart(2,'0'), clockPosX + 130, clockPosY)
 
-  textFont('Helvetica', 20, 20)
-  if(jazz.isPlaying() == true){
-    text('playing', clockPosX + 30, clockPosY + 20)
-  } else if(isJazzReady == true){
-    text('click to play', clockPosX, clockPosY + 20)
-  } else {
-    text('loading, please wait', clockPosX - 30, clockPosY + 20)
-  }
-
-  foreground.textFont('Helvetica', 20, 20)
-  if(jazz.isPlaying() == true){
-    foreground.text('playing', clockPosX + 30, clockPosY + 20)
-  } else if(isJazzReady == true){
-    foreground.text('click to play', clockPosX, clockPosY + 20)
-  } else {
-    foreground.text('loading, please wait', clockPosX - 30, clockPosY + 20)
-  }
 
 
-
-  switch(direction){
+  switch (direction) {
     case 'left':
-      image(foreground, 0, 0, tick * windowWidth / 30 - 1, windowHeight, 0, 0, tick * windowWidth / 30 - 1, windowHeight)
+      image(foreground, 0, 0, tick * windowWidth / tickMax - 1, windowHeight, 0, 0, tick * windowWidth / tickMax - 1, windowHeight)
       break;
 
     case 'up':
-      image(foreground, 0, 0, windowWidth, tick * windowHeight / 30 - 1, 0, 0, windowWidth, tick * windowHeight / 30 - 1)
+      image(foreground, 0, 0, windowWidth, tick * windowHeight / tickMax - 1, 0, 0, windowWidth, tick * windowHeight / tickMax - 1)
       break;
 
     case 'right':
-      image(foreground, -(tick * windowWidth / 30 - 1), 0, windowWidth, windowHeight, -(tick * windowWidth / 30 - 1), 0, windowWidth, windowHeight)
+      image(foreground, windowWidth-(tick * windowWidth / tickMax )-1, 0, windowWidth, windowHeight, windowWidth-(tick * windowWidth / tickMax )-1, 0, windowWidth, windowHeight)
       break;
 
     case 'down':
-      image(foreground, 0, -(tick * windowHeight / 30 - 1), windowWidth, windowHeight, 0, -(tick * windowHeight / 30 - 1), windowWidth, windowHeight)
+      image(foreground, 0, windowHeight-(tick * windowHeight / tickMax)-1, windowWidth, windowHeight, 0, windowHeight-(tick * windowHeight / tickMax )-1, windowWidth, windowHeight)
       break;
-
   }
+
 
   sOld = s
 }
 
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   foreground.resizeCanvas(windowWidth, windowHeight);
+  clockPosX = windowWidth / 2
+  clockPosY = (windowHeight / 2) - 50
 }
 
 function mouseClicked() {
