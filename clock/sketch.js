@@ -47,17 +47,17 @@ var nextRandomColor = [360 * Math.random() , 55 + 10 * Math.random(), 75 + 10 * 
 function draw() {
 
   let s = second()
-
-  if(clieckEvent == 1 && jazz.isPlaying() == false){
-    jazz.play()
-    clieckEvent = 0
-  }
-
+  
   if(tick < tickMax){
     tick++
   }
 
   if(s != sOld){ /* once a second */
+    if(clieckEvent == 1 && jazz.isPlaying() == false){
+      jazz.play()
+      clieckEvent = 0
+    }
+
     tick = 0
     transitionDone = false
     osc.start();
