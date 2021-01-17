@@ -21,6 +21,8 @@ var clieckEvent = false
 var randomColor = [360 * Math.random(), 55 + 10 * Math.random(), 75 + 10 * Math.random()]; // HSB
 var nextRandomColor = [360 * Math.random(), 55 + 10 * Math.random(), 75 + 10 * Math.random()]; // HSB
 
+var h, m, s
+
 function setup() {
   getAudioContext().suspend();
 
@@ -52,17 +54,21 @@ function setup() {
     var t = i / tickMax;
     bezierTickArr[i] = bezierPoint(0, 0.85, 0.9, 1, t);
   }
+
+  updateTime()
+  s = second()
 }
 
 function draw() {
 
-  let s = second()
+  s = second()
 
   if (tick < tickMax) {
     tick++
   }
 
   if (s != sOld) { /* once a second */
+ 
     if (clieckEvent == true && selected.isPlaying() == false) {
       selected.play()
       clieckEvent = 0
@@ -78,6 +84,8 @@ function draw() {
       oscLong.start();
       oscLong.amp(0, 1.8)
     }
+
+    updateTime()
 
     if (s % 2 == 0) {
       do {
@@ -115,7 +123,6 @@ function draw() {
       background('white')
       fill(randomColor[0], randomColor[1], randomColor[2])
     }
-
   }
 
   drawTime(this)
@@ -224,9 +231,9 @@ function lofiReady() {
 function drawTime(canvas) {
   canvas.textFont('Helvetica', 100, 100)
   canvas.textAlign(CENTER);
-  canvas.text(hour().toString().padStart(2, '0'), clockPosX - 130, clockPosY)
-  canvas.text(minute().toString().padStart(2, '0'), clockPosX, clockPosY)
-  canvas.text(second().toString().padStart(2, '0'), clockPosX + 125, clockPosY)
+  canvas.text(h.toString().padStart(2, '0'), clockPosX - 130, clockPosY)
+  canvas.text(m.toString().padStart(2, '0'), clockPosX, clockPosY)
+  canvas.text(s.toString().padStart(2, '0'), clockPosX + 125, clockPosY)
 }
 
 function drawInfo(canvas) {
@@ -236,11 +243,11 @@ function drawInfo(canvas) {
   canvas.text(gmtString, clockPosX, clockPosY + 40);
 
   if (selected.isPlaying() == true || clieckEvent == true) {
-    canvas.textFont('Helvetica', 40, 40)
-    canvas.text('\u25A0', clockPosX, clockPosY + 75)
+    canvas.strokeWeight(0)
+    canvas.square(clockPosX - 15, clockPosY + 55, 26);
   } else if (isAllReady) {
-    canvas.textFont('Helvetica', 30, 30)
-    canvas.text('\u25B6', clockPosX, clockPosY + 75)
+    canvas.strokeWeight(0)
+    canvas.triangle(clockPosX - 15, clockPosY + 55, clockPosX - 15, clockPosY + 81, clockPosX + 10, clockPosY + 68)
   } else {
     canvas.textFont('Helvetica', 20, 20)
     canvas.text('loading', clockPosX, clockPosY + 70)
@@ -299,4 +306,11 @@ function drawTransition() {
       image(foreground, 0, windowHeight - (bezierTickArr[tick] * windowHeight) - 1, windowWidth, windowHeight, 0, windowHeight - (bezierTickArr[tick] * windowHeight) - 1, windowWidth, windowHeight)
       break;
   }
+}
+
+
+function updateTime(){
+
+  h = hour()
+  m = minute()
 }
